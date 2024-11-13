@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "382936351724",
+    "project_id": "openclassgr",
+    "storage_bucket": "openclassgr.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:382936351724:android:cc24a150fa3d7347b5b6c9",
+        "android_client_info": {
+          "package_name": "com.example.openclass"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsMZ1J1t3d2Yfe4XZ7cG4EbyZwyfZLb7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
