@@ -3,6 +3,7 @@ package com.example.openclass.presentation.initial
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,14 +30,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.openclass.R
-
 import com.example.openclass.ui.theme.celeste
 import com.example.openclass.ui.theme.grey
 import com.example.openclass.ui.theme.mostasa
 
 @Preview
 @Composable
-fun InitialScreen(){
+fun InitialScreen( navigateToLogin:() -> Unit = {}, navigateToSignUp: () -> Unit = {}){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,18 +53,31 @@ fun InitialScreen(){
         )
         Text("Gestion de Recursos Humanos")
         Spacer(modifier = Modifier.weight(1f))
-        Button(onClick = {}, modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp),
+        Button(
+            onClick = { navigateToSignUp() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 32.dp),
             colors = ButtonDefaults.buttonColors(containerColor = mostasa))
         {
             Text(text = "Registrate", color = White)
         }
         Spacer(modifier = Modifier.height(8.dp))
-        CustomButton(painterResource(id = R.drawable.google), "Continuar con Google")
+        CustomButton(
+            painterResource(id = R.drawable.google), "Continuar con Google"
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        CustomButton(painterResource(id = R.drawable.linkedin), "Continuar con Linkedin")
-        Text(text = "Iniciar Sesion", color = Black, modifier = Modifier.padding(24.dp))
+        CustomButton(
+            painterResource(id = R.drawable.linkedin),
+            "Continuar con Linkedin"
+        )
+        Text(
+            text = "Iniciar Sesion",
+            color = Black,
+            modifier = Modifier.padding(24.dp).clickable { navigateToLogin() },
+            fontWeight = FontWeight.Bold
+        )
         Spacer(modifier = Modifier.weight(1f))
     }
 }
