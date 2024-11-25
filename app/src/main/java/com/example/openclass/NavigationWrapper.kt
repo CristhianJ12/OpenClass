@@ -7,11 +7,11 @@ import androidx.navigation.compose.composable
 import com.example.openclass.presentation.home.HomeScreen
 import com.example.openclass.presentation.home.MenuScreen
 import com.example.openclass.presentation.home.options.BeneficiosScreen
-import com.example.openclass.presentation.home.options.registropersonal.RegistroPersonalScreen
 import com.example.openclass.presentation.home.options.ControlAsistenciaScreen
 import com.example.openclass.presentation.home.options.DatosContratoScreen
 import com.example.openclass.presentation.home.options.DesempenoEmpleadoScreen
 import com.example.openclass.presentation.home.options.TareasScreen
+import com.example.openclass.presentation.home.options.registropersonal.RegistroPersonalScreen
 import com.example.openclass.presentation.initial.InitialScreen
 import com.example.openclass.presentation.login.LoginScreen
 import com.example.openclass.presentation.signup.SignUpScreen

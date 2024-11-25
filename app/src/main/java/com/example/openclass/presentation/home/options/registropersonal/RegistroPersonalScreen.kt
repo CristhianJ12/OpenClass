@@ -1,135 +1,211 @@
 package com.example.openclass.presentation.home.options.registropersonal
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.*
+import coil.ImageLoader
+import coil.util.DebugLogger
 
-@Preview
 @Composable
 fun RegistroPersonalScreen() {
-    var showDialog by remember { mutableStateOf(false) }
+    val db = FirebaseFirestore.getInstance()
 
-    // Pantalla principal
-    Column(modifier = Modifier.padding(16.dp).fillMaxSize().background(White)) {
-        Text(text = "Registro de Personas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+    var employeeData by remember { mutableStateOf<EmployeeData?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Campo de texto para la búsqueda
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = { Text("Buscar empleado por ID") },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    buscarEmpleado(
+                        db = db,
+                        empleadoId = searchQuery.text.trim(),
+                        onLoading = { isLoading = true },
+                        onSuccess = { data ->
+                            employeeData = data
+                            isLoading = false
+                        },
+                        onError = { error ->
+                            errorMessage = error
+                            isLoading = false
+                        }
+                    )
+                }
+            )
+        )
 
-        // Botones para crear, editar o eliminar
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = {
-                // Mostrar formulario de creación
-                showDialog = true
-            }) {
-                Text(text = "Crear")
-            }
+        // Botón de búsqueda
+        Button(
+            onClick = {
+                buscarEmpleado(
+                    db = db,
+                    empleadoId = searchQuery.text.trim(),
+                    onLoading = { isLoading = true },
+                    onSuccess = { data ->
+                        employeeData = data
+                        isLoading = false
+                    },
+                    onError = { error ->
+                        errorMessage = error
+                        isLoading = false
+                    }
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Buscar")
+        }
 
-            Button(onClick = {
-                // Mostrar formulario de edición (sin funcionalidad)
-                showDialog = true
-            }) {
-                Text(text = "Editar")
-            }
+        // Indicador de carga mientras se busca el empleado
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
 
-            Button(onClick = {
-                // Mostrar opción de eliminar (sin funcionalidad)
-            }) {
-                Text(text = "Eliminar")
+        // Mostrar los datos del empleado si los encontramos
+        employeeData?.let { data ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                MostrarDatosEmpleado(data) // Ahora esto maneja la imagen y los datos
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Lista de personas (solo como ejemplo, sin datos reales)
-        LazyColumn {
-            items(5) { index ->  // Aquí solo estamos mostrando 5 items de ejemplo
-                PersonItem(index)
-            }
-        }
-
-        // Mostrar el formulario cuando se quiere crear o editar
-        if (showDialog) {
-            PersonForm(onCancel = { showDialog = false })
+        // Mensaje de error si ocurre
+        errorMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
         }
     }
 }
 
-    @Composable
-    fun PersonItem(index: Int) {
-        Card(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(text = "Nombre: Persona $index")
-                Text(text = "Edad: ${20 + index}")
+fun buscarEmpleado(
+    db: FirebaseFirestore,
+    empleadoId: String,
+    onLoading: () -> Unit,
+    onSuccess: (EmployeeData) -> Unit,
+    onError: (String) -> Unit
+) {
+    onLoading()
+    db.collection("empleados")
+        .document(empleadoId)
+        .get()
+        .addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+                val data = documentSnapshot.toObject(EmployeeData::class.java)
+                if (data != null) onSuccess(data) else onError("Error al procesar datos del empleado")
+            } else {
+                onError("Empleado no encontrado")
             }
         }
-    }
+        .addOnFailureListener { error ->
+            onError("Error al buscar empleado: ${error.localizedMessage}")
+        }
+}
 
-    @Composable
-    fun PersonForm(onCancel: () -> Unit) {
-        Dialog(onDismissRequest = onCancel) {
-            Surface(
-                modifier = Modifier.padding(16.dp),
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.background
+data class EmployeeData(
+    val nombre: String = "",
+    val apellidos: String = "",
+    val ingreso: Timestamp = Timestamp(Date()),
+    val finalizacion: Timestamp = Timestamp(Date()),
+    val nacimiento: Timestamp = Timestamp(Date()),
+    val image: String = "" // URL de la imagen
+)
+
+fun Timestamp.toFormattedDate(): String {
+    val date = this.toDate()
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(date)
+}
+
+@Composable
+fun MostrarDatosEmpleado(data: EmployeeData) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Aquí agregamos la imagen del empleado
+        val imageLoader = ImageLoader.Builder(LocalContext.current)
+            .logger(DebugLogger())
+            .build()
+
+        // Cargar la imagen utilizando AsyncImage de Coil
+        AsyncImage(
+            model = data.image, // La URL de la imagen que ya está en los datos del empleado
+            contentDescription = "Foto del empleado",
+            imageLoader = imageLoader,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp) // Ajusta el tamaño de la imagen según lo necesites
+        )
+
+        // Tarjeta para contener los datos del empleado
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    TextField(
-                        value = "",
-                        onValueChange = {},
-                        label = { Text("Nombre") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextField(
-                        value = "",
-                        onValueChange = {},
-                        label = { Text("Edad") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = onCancel) {
-                            Text(text = "Cancelar")
-                        }
-
-                        Button(onClick = onCancel) {
-                            Text(text = "Guardar")
-                        }
-                    }
-                }
+                // Títulos y valores organizados
+                DataRow(title = "Nombre", value = data.nombre)
+                DataRow(title = "Apellidos", value = data.apellidos)
+                DataRow(title = "Ingreso", value = data.ingreso.toFormattedDate())
+                DataRow(title = "Finalización", value = data.finalizacion.toFormattedDate())
+                DataRow(title = "Nacimiento", value = data.nacimiento.toFormattedDate())
             }
         }
     }
+}
 
+@Composable
+fun DataRow(title: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
