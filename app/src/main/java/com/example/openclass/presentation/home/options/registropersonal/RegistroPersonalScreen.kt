@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.ImeAction
@@ -34,6 +35,7 @@ fun RegistroPersonalScreen() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Campo de texto para la búsqueda
@@ -79,7 +81,9 @@ fun RegistroPersonalScreen() {
                     }
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2196F3), // Celeste (código hexadecimal)
+                    contentColor = Color.White)
         ) {
             Text("Buscar")
         }
@@ -180,7 +184,6 @@ fun MostrarDatosEmpleado(data: EmployeeData) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                // Títulos y valores organizados
                 DataRow(title = "Nombre", value = data.nombre)
                 DataRow(title = "Apellidos", value = data.apellidos)
                 DataRow(title = "Ingreso", value = data.ingreso.toFormattedDate())

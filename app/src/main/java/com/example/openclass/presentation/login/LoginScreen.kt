@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -37,6 +38,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun LoginScreen(auth: FirebaseAuth, navigateToHome:() -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -67,7 +69,7 @@ fun LoginScreen(auth: FirebaseAuth, navigateToHome:() -> Unit) {
         )
         Spacer(Modifier.height(35.dp))
 
-        Text("Pasword", color = Black, fontWeight = FontWeight.Bold, fontSize = 40.sp)
+        Text("Password", color = Black, fontWeight = FontWeight.Bold, fontSize = 40.sp)
         TextField(
             value = password,
             onValueChange = { password = it },
@@ -75,7 +77,22 @@ fun LoginScreen(auth: FirebaseAuth, navigateToHome:() -> Unit) {
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = grey,
                 focusedContainerColor = White
-            )
+            ),
+            visualTransformation = if (passwordVisible) {
+                androidx.compose.ui.text.input.VisualTransformation.None
+            } else {
+                androidx.compose.ui.text.input.PasswordVisualTransformation()
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            if (passwordVisible) R.drawable.ic_eye_open else R.drawable.ic_eye_open
+                        ),
+                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                    )
+                }
+            }
         )
         Spacer(Modifier.height(48.dp))
         Button(onClick = {

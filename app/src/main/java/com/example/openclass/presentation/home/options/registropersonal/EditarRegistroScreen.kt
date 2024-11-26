@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ fun EditarRegistroScreen() {
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
@@ -64,7 +66,9 @@ fun EditarRegistroScreen() {
                     }
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3), // Celeste (código hexadecimal)
+                contentColor = Color.White)
         ) {
             Text("Cargar datos del empleado")
         }
@@ -75,6 +79,7 @@ fun EditarRegistroScreen() {
 
         empleadoData?.let { data ->
             Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -147,7 +152,9 @@ fun EditarRegistroScreen() {
                             }
                         )
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3), // Celeste (código hexadecimal)
+                        contentColor = Color.White)
                 ) {
                     Text("Guardar cambios")
                 }
@@ -171,7 +178,6 @@ fun EditarRegistroScreen() {
                             }
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )

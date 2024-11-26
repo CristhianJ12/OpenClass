@@ -15,12 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 
-@Preview
+
 @Composable
-fun Material3BottomNavigationExample() {
+fun NavigationRP() {
     val navController = rememberNavController()
 
     Scaffold(
@@ -45,7 +45,11 @@ fun NavigationBar(navController: NavController) {
         BottomNavItem("editar", "Editar", Icons.Default.Edit),
         BottomNavItem("agregar", "Agregar", Icons.Default.Add)
     )
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color(0xFFFF9800),
+        contentColor = Color.White
+    )
+    {
         val currentRoute = currentRoute(navController)
         items.forEach { item ->
             NavigationBarItem(
